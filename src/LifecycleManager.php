@@ -2,6 +2,7 @@
 
 namespace Livewire;
 
+use Illuminate\Support\Arr;
 use Livewire\ImplicitlyBoundMethod;
 use Illuminate\Validation\ValidationException;
 
@@ -13,6 +14,8 @@ class LifecycleManager
 
     public $request;
     public $instance;
+    public $parent;
+    public $params;
     public $response;
 
     public static function fromSubsequentRequest($payload)
@@ -94,8 +97,35 @@ class LifecycleManager
         return $this;
     }
 
-    public function mount($params = [])
+    private function hasWireModel($params): bool
     {
+        if (!is_array($params)) {
+            return false;
+        }
+
+        return Arr::hasAny($params, ['wire:model', 'wire:model.defer']);
+    }
+
+    public function getWireModel($params)
+    {
+        if (isset($params['wire:model'])) {
+            return $params['wire:model'];
+        }
+
+        return $params['wire:model.defer'];
+    }
+
+    public function mount($params = [], $parent = null)
+    {
+        $this->params = $params;
+        $this->parent = $parent;
+
+
+        if ($parent && $this->hasWireModel($params)) {
+            // todo: adicionar uma forma de mudar o "model" base
+            $this->instance->model = $parent->{$this->getWireModel($params)};
+        }
+
         // Assign all public component properties that have matching parameters.
         collect(array_intersect_key($params, $this->instance->getPublicPropertiesDefinedBySubClass()))
             ->each(function ($value, $property) {
@@ -151,6 +181,17 @@ class LifecycleManager
     public function toInitialResponse()
     {
         $this->response->embedThyselfInHtml();
+
+        if ($this->parent && $this->hasWireModel($this->params)) {
+            $key = 'parent:model';
+
+            if (isset($this->params['wire:model.defer'])) {
+                $key .= '.defer';
+            }
+
+            $this->response->embedWireModelInHtml($key, $this->getWireModel($this->params));
+        }
+
 
         Livewire::dispatch('mounted', $this->response);
 

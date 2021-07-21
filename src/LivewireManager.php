@@ -85,7 +85,7 @@ class LivewireManager
         return new $componentClass($id);
     }
 
-    public function mount($name, $params = [])
+    public function mount($name, $params = [], $parent = null)
     {
         // This is if a user doesn't pass params, BUT passes key() as the second argument.
         if (is_string($params)) $params = [];
@@ -98,7 +98,7 @@ class LivewireManager
 
         return LifecycleManager::fromInitialRequest($name, $id)
             ->initialHydrate()
-            ->mount($params)
+            ->mount($params, $parent)
             ->renderToView()
             ->initialDehydrate()
             ->toInitialResponse();

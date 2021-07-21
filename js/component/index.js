@@ -13,6 +13,7 @@ import ModelAction from '@/action/model'
 import DeferredModelAction from '@/action/deferred-model'
 import MessageBus from '../MessageBus'
 import { alpinifyElementsForMorphdom, getEntangleFunction } from './SupportAlpine'
+import ParentModel from './ParentModel'
 
 export default class Component {
     constructor(el, connection) {
@@ -48,9 +49,17 @@ export default class Component {
 
         this.initialize()
 
+        this.initializeParentModel()
+
         this.uploadManager.registerListeners()
 
         if (this.effects.redirect) return this.redirect(this.effects.redirect)
+    }
+
+    initializeParentModel () {
+        if (!this.el.hasAttribute('wire:parent:model')) return
+
+        new ParentModel(this.el).start()
     }
 
     get name() {

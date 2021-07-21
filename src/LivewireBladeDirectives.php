@@ -49,7 +49,7 @@ if (! isset(\$_instance)) {
     \$html = \Livewire\Livewire::dummyMount(\$componentId, \$componentTag);
     \$_instance->preserveRenderedChild($cachedKey);
 } else {
-    \$response = \Livewire\Livewire::mount({$expression});
+    \$response = \Livewire\Livewire::mount({$expression}, \$_instance);
     \$html = \$response->html();
     \$_instance->logRenderedChild($cachedKey, \$response->id(), \Livewire\Livewire::getRootElementTagName(\$html));
 }

@@ -46,6 +46,17 @@ class Response
         ]);
     }
 
+    public function embedWireModelInHtml($key, $value)
+    {
+        if (!$html = $this->effects['html'] ?? null) {
+            return;
+        }
+
+        $this->effects['html'] = (new AddAttributesToRootTagOfHtml)($html, [
+            $key => $value,
+        ]);
+    }
+
     public function html()
     {
         return $this->effects['html'] ?? null;
